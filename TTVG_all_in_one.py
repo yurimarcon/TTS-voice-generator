@@ -1,31 +1,52 @@
 import whisper
-from googletrans import Translator
 from TTS.api import TTS
 import torch
 from pydub import AudioSegment
+import json
+
+# Obter o dispositivo (CPU ou GPU)
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Inicializar o modelo TTS com uma voz específica
-tts_model = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", progress_bar=False, gpu=torch.cuda.is_available())
+# tts_model = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", progress_bar=False, gpu=torch.cuda.is_available())
+tts_model = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
 # Carregar o modelo Whisper
-model = whisper.load_model("medium")  # Escolha o tamanho apropriado do modelo
+model = whisper.load_model("small")  # Escolha o tamanho apropriado do modelo
 
 # Transcrever o áudio com timestamps
-result = model.transcribe("../result/audio.wav", language="pt", task="transcribe")
+result = model.transcribe(audio="../result/audio.wav", language="Portuguese", task="translate")
+print (result)
+
+# with open("../result/transcript.json", "a") as file:
+#     file.write(json.dumps(result))
 
 # Obter os segmentos transcritos
 segments = result['segments']
+print (segments)
 
-translator = Translator()
+tts_model.tts_to_file(text=result['text'], 
+                    speaker_wav="../result/audio.wav", 
+                    language="en", 
+                    file_path=f"../result/x.wav",
+                    split_sentences=True
+                    )
 
-# Traduzir os segmentos e gerar áudio usando TTS
+# tts_new_audio = AudioSegment.from_file(f"../result/x.wav")
+# original_audio = AudioSegment.from_file(f"../result/audio.wav")
+# tts_duration = len(tts_new_audio)
+# original_duration = len(original_audio)
+
+# speed_factor = tts_duration / original_duration
+# adjusted_audio = tts_new_audio.speedup(playback_speed=speed_factor)
+# adjusted_audio.export(f"../result/new.wav", format="wav")
+
 for idx, segment in enumerate(segments):
-    original_text = segment['text']
-    translated = translator.translate(original_text, src='pt', dest='en')
-    segment['translated_text'] = translated.text
-
-    # Gerar áudio usando TTS
-    tts_model.tts_to_file(text=segment['translated_text'], speaker_wav="../result/audio.wav", language="en", file_path=f"../result/segment_{idx}.wav")
+    tts_model.tts_to_file(text=segment['text'], 
+                    speaker_wav="../result/audio.wav", 
+                    language="en", 
+                    file_path=f"../result/segment_{idx}.wav"
+                    )
 
 # Ajustar a velocidade do áudio gerado para corresponder ao tempo do vídeo original
 for idx, segment in enumerate(segments):
@@ -35,6 +56,10 @@ for idx, segment in enumerate(segments):
 
     # Calcular fator de velocidade
     speed_factor = tts_duration / original_duration
+    print("tts_duration===>>>")
+    print(tts_duration)
+    print("original_duration===>>>")
+    print(original_duration)
 
     # Ajustar velocidade
     adjusted_audio = tts_audio.speedup(playback_speed=speed_factor)

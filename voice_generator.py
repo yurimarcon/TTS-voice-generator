@@ -33,7 +33,7 @@
 import torch
 from TTS.api import TTS
 from pydub import AudioSegment
-import sys
+import sys, os
 
 inputAudio = sys.argv[1]
 inputTranscriptText= sys.argv[2]
@@ -66,11 +66,16 @@ segments = split_text_by_characters(contentFile, max_length=250)
 
 # Inicializar a lista para armazenar os segmentos de áudio
 audio_segments = []
+path_segment = "../result/segment.wav"
 
 # Gerar áudio para cada segmento e armazenar
 for segment in segments:
-    wav_segment_path = "segment.wav"
-    tts.tts_to_file(text=segment, speaker_wav=inputAudio, language="en", file_path=wav_segment_path)
+    wav_segment_path = path_segment
+    tts.tts_to_file(text=segment, 
+                    speaker_wav=inputAudio, 
+                    language="en", 
+                    file_path=wav_segment_path,
+                    split_sentences=True)
     audio_segment = AudioSegment.from_wav(wav_segment_path)
     audio_segments.append(audio_segment)
 
@@ -79,5 +84,20 @@ combined_audio = AudioSegment.silent(duration=0)
 for segment in audio_segments:
     combined_audio += segment + AudioSegment.silent(duration=500)  # Adiciona uma pausa de 500ms entre segmentos
 
-# Exportar o áudio final combinado
+# Exportar o áudio temporario combinado
 combined_audio.export(outputAudio, format="wav")
+
+os.remove(path_segment)
+
+# combined_audio.export("../result/temp.wav", format="wav")
+
+# temp_audio = AudioSegment.from_file(f"../result/temp.wav")
+# original_audio = AudioSegment.from_file(inputAudio)
+# tts_duration = len(temp_audio)
+# original_duration = len(original_audio)
+
+# speed_factor = tts_duration / original_duration
+# adjusted_audio = temp_audio.speedup(playback_speed=speed_factor)
+
+# # Exportar o áudio temporario combinado
+# adjusted_audio.export(outputAudio, format="wav")
