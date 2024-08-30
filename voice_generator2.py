@@ -4,7 +4,7 @@ from pydub import AudioSegment
 import sys, os
 
 inputAudio = sys.argv[1]
-inputTranscriptText = sys.argv[2]
+inputTranscriptText= sys.argv[2]
 outputAudio = sys.argv[3]
 
 # Função para dividir o texto em partes menores com base no limite de caracteres
@@ -50,28 +50,9 @@ for segment in segments:
 # Combinar todos os segmentos de áudio
 combined_audio = AudioSegment.silent(duration=0)
 for segment in audio_segments:
-    combined_audio += segment
+    combined_audio += segment + AudioSegment.silent(duration=500)  # Adiciona uma pausa de 500ms entre segmentos
 
-# Calcular a diferença de duração entre o áudio original e o gerado
-original_audio = AudioSegment.from_wav(inputAudio)
-original_duration = len(original_audio)
-generated_duration = len(combined_audio)
-duration_difference = original_duration - generated_duration
-
-# Ajustar a duração adicionando silêncios distribuídos uniformemente
-if duration_difference > 0:
-    print("duration_difference:")
-    print(duration_difference)
-    print("segments:")
-    print(len(segments))
-    silence_to_add = duration_difference / (len(segments))  # Distribui o silêncio entre os segmentos
-    adjusted_audio = AudioSegment.silent(duration=0)
-    for segment in audio_segments:
-        adjusted_audio += segment + AudioSegment.silent(duration=silence_to_add)
-else:
-    adjusted_audio = combined_audio
-
-# Exportar o áudio ajustado
-adjusted_audio.export(outputAudio, format="wav")
+# Exportar o áudio temporario combinado
+combined_audio.export(outputAudio, format="wav")
 
 os.remove(temp_audio)
