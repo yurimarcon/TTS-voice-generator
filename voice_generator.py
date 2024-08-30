@@ -29,35 +29,34 @@ segments = result['segments']
 
 #==================================================================================================
 
-translator = Translator()
+# translator = Translator()
 
-# Traduzir os segmentos e gerar áudio usando TTS
-for idx, segment in enumerate(segments):
-    original_text = segment['text']
-    translated = translator.translate(original_text, src='en', dest='pt')
-    segment['translated_text'] = translated.text
+# Translate the segments and create audio usin TTS
+# for idx, segment in enumerate(segments):
+#     original_text = segment['text']
+#     translated = translator.translate(original_text, src='en', dest='pt')
+#     segment['translated_text'] = translated.text
 
-    # Gerar áudio usando TTS
-    tts_model.tts_to_file(
-        text=segment['translated_text'], 
-        speaker_wav=inputAudio, 
-        language="pt", 
-        file_path=f"../result/segment_{idx}.wav"
-        )
+#     # Gerar áudio usando TTS
+#     tts_model.tts_to_file(
+#         text=segment['translated_text'], 
+#         speaker_wav=inputAudio, 
+#         language="pt", 
+#         file_path=f"../result/segment_{idx}.wav"
+#         )
 
 #==================================================================================================
 
-# for idx, segment in enumerate(segments):
-#     original_text = segment['text']
+for idx, segment in enumerate(segments):
+    original_text = segment['text']
 
-#     tts_model.tts_to_file(
-#         text=segment['text'], 
-#         speaker_wav=inputAudio, 
-#         # speaker_wav="../result/model.wav", 
-#         language="pt", 
-#         # language="en", 
-#         file_path=f"../result/segment_{idx}.wav"
-#         )
+    tts_model.tts_to_file(
+        text=segment['text'], 
+        # speaker_wav=inputAudio, 
+        speaker_wav="../model_voice/model.wav", 
+        language="en", 
+        file_path=f"../result/segment_{idx}.wav"
+        )
 
 final_audio = AudioSegment.silent(duration=initial_silence_duration)  # Add silence detected in start video
 
